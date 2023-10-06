@@ -1,0 +1,86 @@
+<!--
+    IMPORTANT:
+    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.
+    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.
+    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.
+    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.
+    - To remove a policy, delete the corresponding policy statement from the policy document.
+    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.
+    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.
+    - Policies are applied in the order of their appearance, from the top down.
+    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.
+-->
+<policies>
+    <inbound>
+        <base />
+        <!--<set-backend-service base-url="https://aoaipoclb1.openai.azure.com/openai" />
+        <set-header name="api-key" exists-action="override">
+            <value>{{OpenAI_KEY}}</value>
+        </set-header>-->
+        <validate-jwt header-name="Authorization" failed-validation-httpcode="403" failed-validation-error-message="Forbidden">
+            <openid-config url="https://login.microsoftonline.com/{{TENANT_ID}}/v2.0/.well-known/openid-configuration" />
+            <issuers>
+                <issuer>https://sts.windows.net/{{TENANT_ID}}/</issuer>
+            </issuers>
+            <required-claims>
+                <claim name="aud">
+                    <value>https://cognitiveservices.azure.com</value>
+                </claim>
+            </required-claims>
+        </validate-jwt>
+        <set-variable name="urlId" value="@(new Random(context.RequestId.GetHashCode()).Next(1, 4))" />
+        <choose>
+            <when condition="@(context.Variables.GetValueOrDefault<int>("urlId") == 1)">
+                <set-backend-service base-url="{{backend-url-1}}" />
+            </when>
+            <when condition="@(context.Variables.GetValueOrDefault<int>("urlId") == 2)">
+                <set-backend-service base-url="{{backend-url-2}}" />
+            </when>
+            <when condition="@(context.Variables.GetValueOrDefault<int>("urlId") == 3)">
+                <set-backend-service base-url="{{backend-url-3}}" />
+            </when>
+            <otherwise>
+                <!-- Should never happen, but you never know ;) -->
+                <return-response>
+                    <set-status code="500" reason="InternalServerError" />
+                    <set-header name="Microsoft-Azure-Api-Management-Correlation-Id" exists-action="override">
+                        <value>@{return Guid.NewGuid().ToString();}</value>
+                    </set-header>
+                    <set-body>A gateway-related error occurred while processing the request.</set-body>
+                </return-response>
+            </otherwise>
+        </choose>
+    </inbound>
+    <backend>
+        <retry condition="@(context.Response.StatusCode > 400)" count="1" interval="1" max-interval="10" delta="1" first-fast-retry="true">
+            <choose>
+                <when condition="@(context.Variables.GetValueOrDefault<int>("urlId") == 1 && context.Response.StatusCode > 400)">
+                    <set-backend-service base-url="{{backend-url-2}}" />
+                </when>
+                <when condition="@(context.Variables.GetValueOrDefault<int>("urlId") == 2 && context.Response.StatusCode > 400)">
+                    <set-backend-service base-url="{{backend-url-3}}" />
+                </when>
+                <when condition="@(context.Variables.GetValueOrDefault<int>("urlId") == 3 && context.Response.StatusCode > 400)">
+                    <set-backend-service base-url="{{backend-url-1}}" />
+                </when>
+                <otherwise>
+                    <!-- Should never happen, but you never know ;) -->
+                    <return-response>
+                        <set-status code="500" reason="InternalServerError" />
+                        <set-header name="Microsoft-Azure-Api-Management-Correlation-Id" exists-action="override">
+                            <value>@{return Guid.NewGuid().ToString();}</value>
+                        </set-header>
+                        <set-body>A gateway-related error occurred while processing the request.</set-body>
+                    </return-response>
+                </otherwise>
+            </choose>
+            <forward-request />
+        </retry>
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>
