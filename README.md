@@ -1,4 +1,5 @@
-APIM configurations : 1) import swagger from https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#completions for ex, https://github.com/Azure/azure-rest-api-specs/blob/main/specification/cognitiveservices/data-plane/AzureOpenAI/inference/preview/2023-03-15-preview/inference.json then. Ref: Azure-Samples/openai-python-enterprise-logging (github.com) <br>
+APIM configurations : <br>
+1) import swagger from https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#completions for ex, https://github.com/Azure/azure-rest-api-specs/blob/main/specification/cognitiveservices/data-plane/AzureOpenAI/inference/preview/2023-03-15-preview/inference.json then. Ref: https://github.com/Azure-Samples/openai-python-enterprise-logging <br>
 
 2) enable subscription and change header as api-key <br>
 
@@ -6,7 +7,8 @@ APIM configurations : 1) import swagger from https://learn.microsoft.com/en-us/a
 
 4) Custom domain (optional) - for TLS as part of any enterprise implementation standard <br>
 
-5) On AOAI instances - i) provision them ii) deploy completion/embedding etc. models iii) disable network access and enable private endpoint <br>
+On AOAI instances <br>
+5) - i) provision them ii) deploy completion/embedding etc. models iii) disable network access and enable private endpoint <br>
 
 6) Provision VNet, subnets (different for PEs, APIM etc.) with configurations as per the ones given in the docs folder <br>
 
