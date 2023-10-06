@@ -36,4 +36,4 @@ https://learn.microsoft.com/en-us/azure/api-management/configure-custom-domain?t
 
 cURL to test end to end out <br>
 
-''curl -d '{"model":"gpt-35-turbo","messages":[{"role":"user","content":"Hello!"}]}' -H "Content-Type: application/json" -H "Authorization: Bearer <token>" -X POST <APIM endpoint>/chat/completions?api-version=2023-03-15-preview''
+``curl -d '{"model":"gpt-35-turbo","messages":[{"role":"user","content":"Hello!"}]}' -H "Content-Type: application/json" -H "Authorization: Bearer <token>" -X POST <APIM endpoint>/chat/completions?api-version=2023-03-15-preview``
